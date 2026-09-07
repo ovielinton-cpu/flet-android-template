@@ -16,6 +16,10 @@
         android:{{ k }}="{{ v }}"
         {% endfor -%}{% endif -%}
         android:icon="@mipmap/ic_launcher">
+        <!-- Naira Finance Hub: required AdMob App ID (flet_ads crashes at startup without this) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-1457775538229669~1648166698" />
         <!-- flet: meta-data {% for k, v in cookiecutter.options.android_meta_data.items() %} -->
         <meta-data android:name="{{ k }}" android:value="{{ v }}" />
         <!-- flet: end of meta-data {% endfor %} -->
