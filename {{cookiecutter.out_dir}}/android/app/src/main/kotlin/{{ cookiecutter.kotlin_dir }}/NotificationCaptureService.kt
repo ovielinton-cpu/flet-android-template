@@ -37,14 +37,24 @@ class NotificationCaptureService : NotificationListenerService() {
         // Never capture our own app's notifications.
         if (pkg == applicationContext.packageName) return
 
-        val allowlist = readAllowlist()
-        if (allowlist.isNotEmpty() && pkg !in allowlist) return
 
         val extras: Bundle = sbn.notification.extras
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString().orEmpty()
-        val body = if (bigText.length > text.length) bigText else text
+        // SMS apps (Google Messages etc.) use MessagingStyle: the real message body is
+        // in EXTRA_MESSAGES, while EXTRA_TEXT can be just "2 new messages".
+        var messagingText = ""
+        try {
+            val msgs = extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+            if (msgs != null && msgs.isNotEmpty()) {
+                val last = msgs[msgs.size - 1] as? Bundle
+                messagingText = last?.getCharSequence("text")?.toString().orEmpty()
+            }
+        } catch (e: Exception) { }
+        val lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
+            ?.joinToString("\n") { it.toString() }.orEmpty()
+        val body = listOf(messagingText, bigText, lines, text).maxByOrNull { it.length }.orEmpty()
 
         if (title.isBlank() && body.isBlank()) return
 
