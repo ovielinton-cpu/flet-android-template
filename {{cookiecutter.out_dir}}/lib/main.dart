@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flet/flet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -70,6 +71,16 @@ Map<String, String> environmentVariables = {};
 void main(List<String> args) async {
 
   FletDeepLinkingBootstrap.install();
+
+  // Naira Finance Hub: let all app sounds play together. By default every sound
+  // grabs "audio focus", so a tick or drumroll stopped the Ajo draw music.
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await AudioPlayer.global.setAudioContext(
+        AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers).build());
+  } catch (e) {
+    debugPrint("Could not set audio context: $e");
+  }
 
   _args = List<String>.from(args);
 
